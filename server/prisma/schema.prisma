@@ -1,0 +1,256 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String              @id @default(uuid())
+  email          String              @unique
+  password       String
+  name           String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  profile        FarmerProfile?
+  farms          Farm[]
+  scans          DiseaseScan[]
+  soilRecords    SoilRecord[]
+  notifications  Notification[]
+  expenses       Expense[]
+  calendarEvents CropCalendarEvent[]
+}
+
+model FarmerProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone             String?
+  location          String?
+  farmSize          Float?
+  farmingExperience String?
+  mainCrop          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Farm {
+  id             String              @id @default(uuid())
+  userId         String
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  location       String
+  area           Float
+  soilType       String
+  irrigationType String
+  mainCropId     String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  soilRecords    SoilRecord[]
+  expenses       Expense[]
+  calendarEvents CropCalendarEvent[]
+}
+
+model Crop {
+  id                    String              @id @default(uuid())
+  name                  String              @unique
+  scientificName        String
+  cropType              String
+  growingSeason         String
+  tempMin               Float
+  tempMax               Float
+  soilRequirements      String
+  soilPhMin             Float
+  soilPhMax             Float
+  waterRequirement      String
+  irrigationGuidance    String
+  fertilizationSchedule String
+  plantingInfo          String
+  seedInfo              String
+  growthStages          String
+  expectedHarvestPeriod String
+  harvestingGuidance    String
+  storageGuidance       String
+  marketOverview        String
+  imageUrl              String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  diseases              Disease[]
+  calendarEvents        CropCalendarEvent[]
+  marketPrices          MarketPrice[]
+}
+
+model Disease {
+  id                       String                    @id @default(uuid())
+  cropId                   String
+  crop                     Crop                      @relation(fields: [cropId], references: [id], onDelete: Cascade)
+  name                     String
+  category                 String
+  symptoms                 String
+  causes                   String
+  favorableConditions      String
+  prevention               String
+  severity                 String
+  imageUrl                 String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  scans                    DiseaseScan[]
+  treatmentRecommendations TreatmentRecommendation[]
+}
+
+model TreatmentRecommendation {
+  id            String   @id @default(uuid())
+  diseaseId     String
+  disease       Disease  @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  title         String
+  details       String
+  treatmentType String
+  createdAt     DateTime @default(now())
+}
+
+model DiseaseScan {
+  id                              String   @id @default(uuid())
+  userId                          String
+  user                            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diseaseId                       String?
+  disease                         Disease? @relation(fields: [diseaseId], references: [id])
+  imageUrl                        String
+  cropName                        String   @default("Unknown Crop")
+  detectedDisease                 String
+  confidence                      Float
+  confidenceLevel                 String   @default("HIGH") // HIGH, MEDIUM, LOW, REJECTED
+  rejectionReason                 String?  // BLURRY, TOO_DARK, NOT_A_LEAF, UNSUPPORTED_CROP
+  severity                        String?  // MILD, MODERATE, SEVERE
+  symptomsObserved                String
+  causesIdentified                String
+  immediateActions                String   @default("[]")
+  preventionSummary               String
+  treatmentGuidance               String
+  modelId                         String   @default("farmpilot-crop-v1")
+  modelVersion                    String   @default("1.0.0")
+  isExpertVerificationRecommended Boolean  @default(false)
+  status                          String   @default("COMPLETED")
+  createdAt                       DateTime @default(now())
+}
+
+model CropCalendarEvent {
+  id                    String    @id @default(uuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farmId                String?
+  farm                  Farm?     @relation(fields: [farmId], references: [id])
+  cropId                String
+  crop                  Crop      @relation(fields: [cropId], references: [id])
+  plantingDate          DateTime
+  activityName          String
+  stage                 String    // One of 13 agronomic stages
+  scheduledDate         DateTime
+  completedDate         DateTime?
+  status                String    @default("PENDING") // PENDING, COMPLETED, OVERDUE
+  priority              String    @default("MEDIUM")  // HIGH, MEDIUM, LOW
+  description           String?
+  waterRequirement      String?
+  fertilizerTask        String?
+  soilConsiderations    String?
+  diseaseMonitoring     String?
+  pestMonitoring        String?
+  weatherConsiderations String?
+  farmerNotes           String?
+  weatherImpact         String?
+  recommendation        String?
+  isSmartAdjusted       Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model SoilRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farmId          String?
+  farm            Farm?    @relation(fields: [farmId], references: [id])
+  location        String
+  soilType        String
+  ph              Float
+  moisture        Float
+  nitrogen        Float
+  phosphorus      Float
+  potassium       Float
+  organicMatter   Float
+  healthScore     Float
+  isEstimated     Boolean  @default(false)
+  recommendations String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WeatherRecord {
+  id              String   @id @default(uuid())
+  location        String
+  temperature     Float
+  feelsLike       Float
+  humidity        Float
+  windSpeed       Float
+  windDirection   Float?
+  pressure        Float
+  visibility      Float?
+  cloudPercentage Float
+  rainProbability Float
+  condition       String
+  icon            String
+  sunrise         String?
+  sunset          String?
+  recordedAt      DateTime @default(now())
+}
+
+model WeatherAlert {
+  id                String   @id @default(uuid())
+  title             String
+  severity          String
+  description       String
+  recommendedAction String
+  location          String?
+  validUntil        DateTime
+  createdAt         DateTime @default(now())
+}
+
+model MarketPrice {
+  id            String   @id @default(uuid())
+  cropId        String
+  crop          Crop     @relation(fields: [cropId], references: [id], onDelete: Cascade)
+  cropName      String
+  market        String
+  location      String
+  currentPrice  Float
+  previousPrice Float
+  priceChange   Float
+  unit          String   @default("INR/kg")
+  recordedAt    DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String
+  severity  String   @default("INFO")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farmId      String?
+  farm        Farm?    @relation(fields: [farmId], references: [id])
+  category    String
+  description String
+  amount      Float
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}

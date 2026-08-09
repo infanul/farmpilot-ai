@@ -1,0 +1,27 @@
+{
+  "name": "farmpilot-ai-root",
+  "version": "1.0.0",
+  "description": "FarmPilot AI — Full-Stack Digital Farming Platform",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:server": "cd server && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "cd server && npm run build && cd ../frontend && npm run build",
+    "db:seed": "cd server && npx prisma db seed",
+    "db:push": "cd server && npx prisma db push",
+    "db:studio": "cd server && npx prisma studio"
+  },
+  "keywords": [
+    "agriculture",
+    "farming",
+    "ai",
+    "nextjs",
+    "express",
+    "prisma",
+    "sqlite"
+  ],
+  "author": "FarmPilot AI Team",
+  "license": "ISC"
+}
