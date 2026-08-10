@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -121,8 +121,8 @@ model DiseaseScan {
   detectedDisease                 String
   confidence                      Float
   confidenceLevel                 String   @default("HIGH") // HIGH, MEDIUM, LOW, REJECTED
-  rejectionReason                 String?  // BLURRY, TOO_DARK, NOT_A_LEAF, UNSUPPORTED_CROP
-  severity                        String?  // MILD, MODERATE, SEVERE
+  rejectionReason                 String? // BLURRY, TOO_DARK, NOT_A_LEAF, UNSUPPORTED_CROP
+  severity                        String? // MILD, MODERATE, SEVERE
   symptomsObserved                String
   causesIdentified                String
   immediateActions                String   @default("[]")
@@ -145,11 +145,11 @@ model CropCalendarEvent {
   crop                  Crop      @relation(fields: [cropId], references: [id])
   plantingDate          DateTime
   activityName          String
-  stage                 String    // One of 13 agronomic stages
+  stage                 String // One of 13 agronomic stages
   scheduledDate         DateTime
   completedDate         DateTime?
   status                String    @default("PENDING") // PENDING, COMPLETED, OVERDUE
-  priority              String    @default("MEDIUM")  // HIGH, MEDIUM, LOW
+  priority              String    @default("MEDIUM") // HIGH, MEDIUM, LOW
   description           String?
   waterRequirement      String?
   fertilizerTask        String?

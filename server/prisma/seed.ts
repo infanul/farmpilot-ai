@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting FarmPilot AI database seed...');
 
-  // Clear existing data
+  // Clear existing data in correct dependency order
   await prisma.expense.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.marketPrice.deleteMany();
@@ -35,7 +35,7 @@ async function main() {
           location: 'Kottayam, Kerala',
           farmSize: 4.5,
           farmingExperience: '8 years',
-          mainCrop: 'Rice, Tomato & Chilli',
+          mainCrop: 'Rice, Banana & Tomato',
         },
       },
     },
@@ -55,7 +55,7 @@ async function main() {
     },
   });
 
-  // 3. Seed 13 Standard Agronomic Stages
+  // 3. Standard Agronomic Lifecycle Stages
   const standard13Stages = [
     'Land Preparation',
     'Seed Selection',
@@ -72,7 +72,7 @@ async function main() {
     'Post-Harvest',
   ];
 
-  // 4. Seed Crops (Rice, Tomato, Chilli)
+  // 4. Seed Crops (Rice, Banana, Tomato, Chilli)
   const rice = await prisma.crop.create({
     data: {
       name: 'Rice',
@@ -88,13 +88,38 @@ async function main() {
       irrigationGuidance: 'Maintain 2-5 cm standing water during tillering and flowering. Drain 10 days before harvest.',
       fertilizationSchedule: 'NPK 120:60:60 kg/ha. Apply Basal NPK; top-dress Nitrogen at active tillering and panicle initiation.',
       plantingInfo: 'Transplant 20–25 day old seedlings at 20x15 cm spacing.',
-      seedInfo: 'Requires 20–25 kg certified seeds per acre. Treat seeds with Carbendazim before nursery sowing.',
+      seedInfo: 'Requires 20–25 kg certified seeds per acre. Treat seeds with Carbendazim or Trichoderma before nursery sowing.',
       growthStages: JSON.stringify(standard13Stages),
       expectedHarvestPeriod: 'October - November / March - April',
       harvestingGuidance: 'Harvest when 80-85% of panicles turn golden yellow and grain moisture drops below 20%.',
       storageGuidance: 'Sun-dry grains to 12–14% moisture content before storing in moisture-proof silos or gunny bags.',
       marketOverview: 'High market demand with strong local MSP support and basmati export potential.',
       imageUrl: 'https://images.unsplash.com/photo-1536657464919-892534f60d6e?auto=format&fit=crop&q=80&w=800',
+    },
+  });
+
+  const banana = await prisma.crop.create({
+    data: {
+      name: 'Banana',
+      scientificName: 'Musa acuminata',
+      cropType: 'Perennial Fruit Crop',
+      growingSeason: 'Year-round (300–365 days)',
+      tempMin: 15,
+      tempMax: 38,
+      soilRequirements: 'Deep, fertile, well-drained loamy soil rich in organic humus',
+      soilPhMin: 6.0,
+      soilPhMax: 7.5,
+      waterRequirement: 'High (1800–2200 mm per year). Requires regular moisture without standing waterlogging.',
+      irrigationGuidance: 'Drip irrigation @ 15-20 liters/plant/day during dry months. Maintain drainage ditches in monsoon.',
+      fertilizationSchedule: 'NPK 200:50:300 g/plant in 6-8 split doses at 30-day intervals. Apply 10 kg FYM per pit at planting.',
+      plantingInfo: 'Plant tissue culture plantlets or sword suckers in 60x60x60 cm pits at 2x2 m spacing.',
+      seedInfo: 'Use virus-tested tissue culture plantlets or disease-free sword suckers weighing 1.5–2.0 kg.',
+      growthStages: JSON.stringify(standard13Stages),
+      expectedHarvestPeriod: '11–13 months from planting',
+      harvestingGuidance: 'Harvest bunch when angular edges of fingers round off (75-80% maturity) using a sharp sickle.',
+      storageGuidance: 'Hang bunches in a cool shaded packing shed at 13–15°C with 85–90% relative humidity.',
+      marketOverview: 'High year-round fruit demand for Nendran, Grand Naine, and Poovan varieties with excellent local prices.',
+      imageUrl: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&q=80&w=800',
     },
   });
 
@@ -148,11 +173,11 @@ async function main() {
     },
   });
 
-  console.log(`🌾 Seeded Crops: ${rice.name}, ${tomato.name}, ${chilli.name}`);
+  console.log(`🌾 Seeded Crops: ${rice.name}, ${banana.name}, ${tomato.name}, ${chilli.name}`);
 
-  // 5. Seed Realistic Diseases for Rice, Tomato, and Chilli
+  // 5. Seed Realistic Diseases for Rice, Banana, Tomato, and Chilli
   // --- Rice Diseases ---
-  const riceBlast = await prisma.disease.create({
+  await prisma.disease.create({
     data: {
       cropId: rice.id,
       name: 'Rice Blast',
@@ -168,12 +193,13 @@ async function main() {
           { title: 'Cultural Control', details: 'Maintain balanced Nitrogen application; apply Potassium in two split doses to strengthen plant cell walls.', treatmentType: 'Cultural' },
           { title: 'Field Sanitation', details: 'Destroy infected paddy stubble after harvest; remove weed hosts along field bunds.', treatmentType: 'Sanitation' },
           { title: 'Biological Treatment', details: 'Foliar spray of Pseudomonas fluorescens (10g/L) at 15-day intervals during early vegetative stage.', treatmentType: 'Biological' },
+          { title: 'Chemical Protection Disclaimer', details: 'If severe outbreak occurs, consult local agricultural officer before using recommended Tricyclazole product label instructions.', treatmentType: 'Chemical Safety' },
         ],
       },
     },
   });
 
-  const riceBrownSpot = await prisma.disease.create({
+  await prisma.disease.create({
     data: {
       cropId: rice.id,
       name: 'Brown Spot',
@@ -194,8 +220,71 @@ async function main() {
     },
   });
 
+  // --- Banana Diseases ---
+  await prisma.disease.create({
+    data: {
+      cropId: banana.id,
+      name: 'Panama Disease / Fusarium Wilt',
+      category: 'Fungal Soil-borne (Fusarium oxysporum f. sp. cubense)',
+      symptoms: 'Yellowing of lower leaf margins progressing upwards, longitudinal splitting of pseudostem base, internal reddish-brown vascular discoloration.',
+      causes: 'Soil-borne fungal pathogen surviving in soil for decades, penetrating roots through injuries.',
+      favorableConditions: 'Soil temperature 25-28°C, acidic soil pH, poor field drainage, and root nematode infestation.',
+      prevention: 'Plant tissue-culture resistant varieties (Grand Naine). Drench planting pits with bio-fungicides. Avoid transferring soil or water from infected fields.',
+      severity: 'SEVERE',
+      imageUrl: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&q=80&w=800',
+      treatmentRecommendations: {
+        create: [
+          { title: 'Bio-Agent Soil Drenching', details: 'Apply Trichoderma viride & Pseudomonas fluorescens @ 50g/plant mixed with 5kg organic FYM compost.', treatmentType: 'Biological' },
+          { title: 'Phytosanitation', details: 'Uproot infected pseudostems in sealed bags; apply 1 kg lime per pit to sanitize soil.', treatmentType: 'Sanitation' },
+          { title: 'Extension Consultation', details: 'Always verify suspected Panama wilt cases with local agricultural officer before clearing banana mats.', treatmentType: 'Expert Verification' },
+        ],
+      },
+    },
+  });
+
+  await prisma.disease.create({
+    data: {
+      cropId: banana.id,
+      name: 'Sigatoka Leaf Spot',
+      category: 'Fungal Foliar (Mycosphaerella musicola)',
+      symptoms: 'Small pale yellow-green streaks parallel to leaf veins developing into dark brown/black spots with gray dried centers and yellow halos.',
+      causes: 'Airborne ascospores and rain-splashed conidia spreading from lower mature foliage.',
+      favorableConditions: 'High relative humidity (>85%), leaf surface wetness, and temperatures between 23-28°C.',
+      prevention: 'Maintain 2x2 m plant spacing for aeration. Promptly de-trash lower spotted leaves. Ensure field drainage.',
+      severity: 'SEVERE',
+      imageUrl: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&q=80&w=800',
+      treatmentRecommendations: {
+        create: [
+          { title: 'De-trashing', details: 'Prune spotted lower leaves at 30-day intervals and destroy outside plot.', treatmentType: 'Cultural' },
+          { title: 'Botanical / Bio-Spray', details: 'Foliar spray of Neem Oil (10,000 ppm) @ 3ml/L water or Pseudomonas fluorescens @ 10g/L.', treatmentType: 'Biological' },
+          { title: 'Chemical Label Adherence', details: 'If infection covers >25% canopy, consult agricultural extension for label-approved systemic fungicide application.', treatmentType: 'Chemical Safety' },
+        ],
+      },
+    },
+  });
+
+  await prisma.disease.create({
+    data: {
+      cropId: banana.id,
+      name: 'Banana Bunchy Top Virus (BBTV)',
+      category: 'Viral (transmitted by Banana Aphid Pentalonia nigronervosa)',
+      symptoms: 'Narrow upright crowded leaves forming a rosette bunch at crown top. Dark green "dash-and-dot" streaks along leaf veins and petioles.',
+      causes: 'Transmitted persistently by banana aphid vectors and infected sucker propagation.',
+      favorableConditions: 'High aphid vector population during warm humid months.',
+      prevention: 'Plant certified virus-free tissue culture plantlets. Inspect field monthly for aphid vector colonies.',
+      severity: 'SEVERE',
+      imageUrl: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&q=80&w=800',
+      treatmentRecommendations: {
+        create: [
+          { title: 'Vector Control', details: 'Erect yellow sticky traps and spray neem formulations to manage aphid vector populations.', treatmentType: 'Biological' },
+          { title: 'Eradication & Sanitation', details: 'Inject kerosene/herbicide to kill infected stool; dig out rhizome completely to stop virus spread.', treatmentType: 'Sanitation' },
+        ],
+      },
+    },
+  });
+
   // --- Tomato Diseases ---
-  const tomatoEarlyBlight = await prisma.disease.create({
+  await prisma.disease.create({
     data: {
       cropId: tomato.id,
       name: 'Tomato Early Blight',
@@ -216,7 +305,7 @@ async function main() {
     },
   });
 
-  const tomatoLateBlight = await prisma.disease.create({
+  await prisma.disease.create({
     data: {
       cropId: tomato.id,
       name: 'Tomato Late Blight',
@@ -238,7 +327,7 @@ async function main() {
   });
 
   // --- Chilli Diseases ---
-  const chilliAnthracnose = await prisma.disease.create({
+  await prisma.disease.create({
     data: {
       cropId: chilli.id,
       name: 'Chilli Anthracnose / Fruit Rot',
@@ -259,37 +348,16 @@ async function main() {
     },
   });
 
-  const chilliLeafCurl = await prisma.disease.create({
-    data: {
-      cropId: chilli.id,
-      name: 'Chilli Leaf Curl Virus (ChLCV)',
-      category: 'Viral (Geminiviridae transmitted by Whitefly)',
-      symptoms: 'Upward curling of leaves, puckering, reduced leaf size, stunting of plants, and flower drop leading to bushy sterile growth.',
-      causes: 'Transmitted by Whitefly vector (*Bemisia tabaci*) from infected weed hosts.',
-      favorableConditions: 'Dry warm dry weather encouraging high whitefly vector population.',
-      prevention: 'Raise seedlings under 40-mesh insect net. Install yellow sticky traps (15/acre) in field.',
-      severity: 'SEVERE',
-      imageUrl: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&q=80&w=800',
-      treatmentRecommendations: {
-        create: [
-          { title: 'Vector Control Traps', details: 'Erect yellow sticky cards at canopy height to capture whiteflies.', treatmentType: 'Cultural' },
-          { title: 'Sanitation', details: 'Rough out severely stunted viral-infected plants in sealed plastic bags.', treatmentType: 'Sanitation' },
-          { title: 'Botanical Spray', details: 'Foliar spray of Neem Oil (10,000 ppm) @ 3ml/L water to deter sucking pests.', treatmentType: 'Biological' },
-        ],
-      },
-    },
-  });
-
-  console.log('🦠 Seeded Realistic Crop Diseases & IPM Recommendations');
+  console.log('🦠 Seeded Realistic Crop Diseases & IPM Recommendations (Rice, Banana, Tomato, Chilli)');
 
   // 6. Seed Pre-calculated 13-Stage Crop Calendar Events for Demo User
   const plantingDate = new Date();
-  plantingDate.setDate(plantingDate.getDate() - 20); // 20 days ago
+  plantingDate.setDate(plantingDate.getDate() - 20);
 
   const rice13TaskTemplates = [
     { stage: 'Land Preparation', offsetDays: -10, name: 'Deep Plowing & Basal FYM Incorporation', priority: 'HIGH', desc: 'Plow field to 20 cm depth and incorporate 5 t/ha FYM compost.' },
     { stage: 'Seed Selection', offsetDays: -5, name: 'Certified Paddy Seed Selection', priority: 'MEDIUM', desc: 'Select certified high-yielding Basmati / Swarna seed variety.' },
-    { stage: 'Seed Treatment', offsetDays: -2, name: 'Carbendazim Seed Treatment', priority: 'HIGH', desc: 'Soak seeds in bio-fungicide slurry for 12 hours prior to nursery bed.' },
+    { stage: 'Seed Treatment', offsetDays: -2, name: 'Bio-Fungicide Seed Treatment', priority: 'HIGH', desc: 'Soak seeds in Trichoderma viride slurry for 12 hours prior to nursery bed.' },
     { stage: 'Nursery Preparation', offsetDays: 0, name: 'Wet Nursery Bed Setup & Sowing', priority: 'HIGH', desc: 'Prepare 10 cm raised wet nursery beds and broadcast sprouted seeds.' },
     { stage: 'Sowing / Transplanting', offsetDays: 20, name: 'Main Field Paddy Transplanting', priority: 'HIGH', desc: 'Transplant 20-25 day seedlings at 20x15 cm spacing with 2-3 seedlings/hill.' },
     { stage: 'Germination', offsetDays: 25, name: 'Nursery Emergence & Thin Moisture Check', priority: 'MEDIUM', desc: 'Ensure nursery bed retains saturation without submerging shoot tips.' },
@@ -346,7 +414,8 @@ async function main() {
       potassium: 195,
       organicMatter: 2.8,
       healthScore: 86.5,
-      recommendations: 'Soil condition is highly optimal for Rice and Tomato cultivation. Apply 50 kg/ha organic compost to maintain organic carbon level.',
+      isEstimated: false,
+      recommendations: 'Soil condition is highly optimal for Rice, Banana, and Tomato cultivation. Apply 50 kg/ha organic compost to maintain organic carbon level.',
     },
   });
 
@@ -370,17 +439,18 @@ async function main() {
     data: {
       title: 'Moderate Humidity Alert',
       severity: 'WARNING',
-      description: 'Relative humidity expected to reach 85% overnight. Heightened risk for fungal spore germination on Tomato and Chilli foliage.',
-      recommendedAction: 'Inspect crop canopy for early blight and anthracnose spots. Ensure adequate row ventilation.',
+      description: 'Relative humidity expected to reach 85% overnight. Heightened risk for fungal spore germination on Tomato, Banana, and Chilli foliage.',
+      recommendedAction: 'Inspect crop canopy for early blight and Sigatoka spot symptoms. Ensure adequate row ventilation.',
       location: 'Kottayam, Kerala',
       validUntil: new Date(Date.now() + 86400000 * 2),
     },
   });
 
-  // 9. Seed Market Commodity Prices (Rice, Tomato, Chilli)
+  // 9. Seed Market Commodity Prices (Rice, Banana, Tomato, Chilli)
   await prisma.marketPrice.createMany({
     data: [
       { cropId: rice.id, cropName: 'Rice (Sona Masoori)', market: 'Kottayam Central Mandi', location: 'Kottayam', currentPrice: 38.5, previousPrice: 36.0, priceChange: 2.5, unit: 'INR/kg' },
+      { cropId: banana.id, cropName: 'Banana (Nendran)', market: 'Thrissur Wholesale Fruit Market', location: 'Thrissur', currentPrice: 42.0, previousPrice: 40.0, priceChange: 2.0, unit: 'INR/kg' },
       { cropId: tomato.id, cropName: 'Tomato (Hybrid F1)', market: 'Ernakulam Wholesale Market', location: 'Ernakulam', currentPrice: 24.0, previousPrice: 28.0, priceChange: -4.0, unit: 'INR/kg' },
       { cropId: chilli.id, cropName: 'Chilli (Red Dry)', market: 'Guntur Spice Mandi', location: 'Guntur', currentPrice: 185.0, previousPrice: 172.0, priceChange: 13.0, unit: 'INR/kg' },
     ],

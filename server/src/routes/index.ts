@@ -16,6 +16,8 @@ import { getAnalytics } from '../controllers/analyticsController';
 import { getExpenses, addExpense } from '../controllers/financeController';
 import { authenticateToken } from '../middleware/authMiddleware';
 
+import { prisma } from '../lib/prisma';
+
 const upload = multer({
   dest: 'uploads/',
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
@@ -30,11 +32,20 @@ const upload = multer({
 
 const router = Router();
 
-// Health Check Endpoint (Req 36)
-router.get('/health', (req, res) => {
+// Health Check Endpoint (Returns server status & DB connectivity)
+router.get('/health', async (req, res) => {
+  let dbStatus = 'disconnected';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+  } catch (err) {
+    dbStatus = 'error';
+  }
+
   res.json({
-    success: true,
+    status: 'healthy',
     message: 'FarmPilot AI API is running',
+    database: dbStatus,
     timestamp: new Date().toISOString(),
   });
 });

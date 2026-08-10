@@ -1,6 +1,10 @@
 import { WeatherData, DailyForecast, HourlyForecast } from '../types';
 
 export class WeatherService {
+  // In-memory weather cache (10-minute TTL) to prevent rate-limiting OpenWeather API
+  private static cache: { [location: string]: { data: WeatherData; timestamp: number } } = {};
+  private static CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
   /**
    * Dynamically generate practical agricultural recommendations based on weather parameters
    */
@@ -32,7 +36,7 @@ export class WeatherService {
     }
 
     if (humidity >= 85) {
-      recs.push('🍄 High atmospheric humidity (>' + Math.round(humidity) + '%). Disease risk increased (Rice Blast, Tomato Blight). Inspect crop canopy.');
+      recs.push('🍄 High atmospheric humidity (>' + Math.round(humidity) + '%). Disease risk increased (Rice Blast, Tomato Blight, Banana Sigatoka). Inspect crop canopy.');
     }
 
     if (recs.length === 0) {
@@ -43,9 +47,17 @@ export class WeatherService {
   }
 
   /**
-   * Fetch current live weather and multi-day forecast for given location
+   * Fetch current live weather and multi-day forecast for given location (with 10-min cache)
    */
   public static async getWeather(location: string = 'Kottayam, Kerala'): Promise<WeatherData> {
+    const now = Date.now();
+    const cacheKey = location.toLowerCase().trim();
+
+    // Check 10-minute cache first
+    if (this.cache[cacheKey] && now - this.cache[cacheKey].timestamp < this.CACHE_TTL_MS) {
+      return this.cache[cacheKey].data;
+    }
+
     const apiKey = process.env.OPENWEATHER_API_KEY;
 
     if (apiKey) {
@@ -65,7 +77,7 @@ export class WeatherService {
           const mockForecast = this.generateFallbackForecast(temp);
           const mockHourly = this.generateFallbackHourly(temp);
 
-          return {
+          const weatherResult: WeatherData = {
             location: data.name + ', ' + (data.sys.country || ''),
             temperature: Math.round(temp * 10) / 10,
             feelsLike: Math.round(data.main.feels_like * 10) / 10,
@@ -84,6 +96,10 @@ export class WeatherService {
             hourly: mockHourly,
             recommendations: recs,
           };
+
+          // Save to 10-minute cache
+          this.cache[cacheKey] = { data: weatherResult, timestamp: now };
+          return weatherResult;
         }
       } catch (err) {
         console.warn('⚠️ OpenWeather API call failed, using dynamic local weather generator.');
@@ -99,7 +115,7 @@ export class WeatherService {
 
     const recs = this.generateFarmingRecommendations(baseTemp, humidity, windSpeed, rainProb, condition);
 
-    return {
+    const fallbackResult: WeatherData = {
       location: location || 'Kottayam, Kerala',
       temperature: baseTemp,
       feelsLike: 31.2,
@@ -118,6 +134,10 @@ export class WeatherService {
       hourly: this.generateFallbackHourly(baseTemp),
       recommendations: recs,
     };
+
+    // Save to 10-minute cache
+    this.cache[cacheKey] = { data: fallbackResult, timestamp: now };
+    return fallbackResult;
   }
 
   private static generateFallbackForecast(baseTemp: number): DailyForecast[] {

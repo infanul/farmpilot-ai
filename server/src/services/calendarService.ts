@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export class CalendarService {
   /**
-   * Generates a complete 13-stage agronomic calendar for Rice, Tomato, or Chilli
+   * Generates a complete 13-stage agronomic calendar for Rice, Banana, Tomato, or Chilli
    */
   public static async generateCalendarForCrop(
     userId: string,
@@ -19,7 +19,7 @@ export class CalendarService {
     const plantingDate = new Date(plantingDateStr);
     const cropName = crop.name.toLowerCase();
 
-    // 13 Agronomic Stage Templates for Rice, Tomato, and Chilli
+    // 13 Agronomic Stage Templates for Rice, Banana, Tomato, and Chilli
     let taskTemplates: Array<{
       stage: string;
       offsetDays: number;
@@ -204,6 +204,178 @@ export class CalendarService {
           diseaseMonitoring: 'Prevent storage fungal mold by drying thoroughly',
           pestMonitoring: 'Store in clean granary lined with Neem leaf powder',
           weatherConsiderations: 'Cover drying grains with tarpaulins if sudden rain occurs',
+        },
+      ];
+    } else if (cropName.includes('banana')) {
+      taskTemplates = [
+        {
+          stage: 'Land Preparation',
+          offsetDays: -15,
+          activityName: 'Pit Digging & Organic Manure Filling',
+          priority: 'HIGH',
+          description: 'Dig 60x60x60 cm pits at 2x2m spacing; expose to sun for 10 days and fill with 10 kg FYM + Neem cake 250g.',
+          waterRequirement: 'Initial pit soaking irrigation',
+          fertilizerTask: 'Basal FYM 10 kg/pit + Neem cake 250g + SSP 200g',
+          soilConsiderations: 'Deep fertile soil with good drainage ditches',
+          diseaseMonitoring: 'Neem cake prevents soil-borne fusarium Panama wilt',
+          pestMonitoring: 'Treat pits against rhizome weevils',
+          weatherConsiderations: 'Dig pits before pre-monsoon rains begin',
+        },
+        {
+          stage: 'Seed Selection',
+          offsetDays: -5,
+          activityName: 'Tissue Culture Plantlet / Sword Sucker Selection',
+          priority: 'MEDIUM',
+          description: 'Procure certified virus-free Grand Naine or Nendran tissue culture plantlets (or 1.5-2 kg healthy sword suckers).',
+          waterRequirement: 'N/A',
+          fertilizerTask: 'N/A',
+          soilConsiderations: 'Select virus-indexed clean material',
+          diseaseMonitoring: 'Ensure suckers have zero vascular discoloration or bunchy top virus symptoms',
+          pestMonitoring: 'Inspect sucker bases for borer tunnel holes',
+          weatherConsiderations: 'Keep plantlets in shaded nursery before planting',
+        },
+        {
+          stage: 'Seed Treatment',
+          offsetDays: -2,
+          activityName: 'Bio-Fungicide Sucker Paring & Prencil Soak',
+          priority: 'HIGH',
+          description: 'Pare sucker roots and dip in Pseudomonas fluorescens (10g/L) + Trichoderma viride (10g/L) slurry for 30 mins.',
+          waterRequirement: 'Soaking bucket clean water',
+          fertilizerTask: 'Bio-agent sucker coat',
+          soilConsiderations: 'Protects emerging roots in pit',
+          diseaseMonitoring: 'Prevents Panama wilt & Erwinia head rot',
+          pestMonitoring: 'N/A',
+          weatherConsiderations: 'Perform sucker soak in shaded area',
+        },
+        {
+          stage: 'Nursery Preparation',
+          offsetDays: 0,
+          activityName: 'Secondary Nursery Hardening (for TC plantlets)',
+          priority: 'MEDIUM',
+          description: 'Harden tissue culture plantlets under 50% shade net for 2 weeks prior to field planting.',
+          waterRequirement: 'Mist spray daily',
+          fertilizerTask: 'Foliar spray 19:19:19 (2g/L) at 7 days',
+          soilConsiderations: 'Polybag soil mix',
+          diseaseMonitoring: 'Check leaves for early Sigatoka flecks',
+          pestMonitoring: 'Keep under aphid-proof net shelter',
+          weatherConsiderations: 'Protect from heavy wind gusts',
+        },
+        {
+          stage: 'Sowing / Transplanting',
+          offsetDays: 15,
+          activityName: 'Main Field Pit Planting & Staking',
+          priority: 'HIGH',
+          description: 'Plant tissue culture plantlet / sucker in pit center, press soil firmly, and irrigate immediately.',
+          waterRequirement: 'Immediate basin watering @ 15 L/plant',
+          fertilizerTask: 'Basal bio-fertilizer application',
+          soilConsiderations: 'Do not bury stem collar deeper than nursery polybag depth',
+          diseaseMonitoring: 'Inspect plantlets for root rot',
+          pestMonitoring: 'Check for early grasshopper feeding',
+          weatherConsiderations: 'Plant during cloud cover or late afternoon hours',
+        },
+        {
+          stage: 'Germination',
+          offsetDays: 30,
+          activityName: 'New Leaf Emergence & Gap Filling',
+          priority: 'MEDIUM',
+          description: 'Check for first new green leaf unrolling; replace any failing suckers in pits.',
+          waterRequirement: 'Drip irrigate 15 L/plant every 2 days',
+          fertilizerTask: 'First split Nitrogen dose (50g Urea/plant)',
+          soilConsiderations: 'Keep basin weed-free',
+          diseaseMonitoring: 'Check heart leaves for rot',
+          pestMonitoring: 'Inspect leaf undersides for aphid colonies',
+          weatherConsiderations: 'Drain excess monsoon water from basin rings',
+        },
+        {
+          stage: 'Early Growth',
+          offsetDays: 60,
+          activityName: 'Desuckering & Ring Weeding',
+          priority: 'MEDIUM',
+          description: 'Prune unwanted side suckers (retain only main mother plant); earthing up around stem base.',
+          waterRequirement: 'Regular drip irrigation',
+          fertilizerTask: 'Second split NPK dose (Urea 50g + MOP 50g/plant)',
+          soilConsiderations: 'Mound soil 15 cm high around pseudostem',
+          diseaseMonitoring: 'Inspect lower leaves for Sigatoka yellow spots',
+          pestMonitoring: 'Check pseudostem base for aphid clusters',
+          weatherConsiderations: 'De-sucker during dry weather',
+        },
+        {
+          stage: 'Vegetative Growth',
+          offsetDays: 120,
+          activityName: 'Active Vegetative Canopy Growth & Micronutrient Spray',
+          priority: 'HIGH',
+          description: 'Spray Zinc Sulfate 0.5% + Ferrous Sulfate 0.2% foliar feed; continue monthly NPK split application.',
+          waterRequirement: 'Peak water demand (20 L/plant/day)',
+          fertilizerTask: 'Third split NPK fertigation (Urea 100g + MOP 100g/plant)',
+          soilConsiderations: 'Maintain deep moist root zone',
+          diseaseMonitoring: 'De-trash spotted lower leaves to control Sigatoka spread',
+          pestMonitoring: 'Inspect pseudostem bore holes for banana stem weevil oozing gum',
+          weatherConsiderations: 'Ensure drainage channels clear before heavy monsoons',
+        },
+        {
+          stage: 'Flowering',
+          offsetDays: 210,
+          activityName: 'Bunch Shooting / Flowering & Male Bud Removal',
+          priority: 'HIGH',
+          description: 'Bunch emerges from pseudostem crown. Remove male flower bud (denavelling) after last hand opens.',
+          waterRequirement: 'Critical flowering water phase (25 L/plant/day)',
+          fertilizerTask: 'Final split Potash application (MOP 150g/plant)',
+          soilConsiderations: 'Potash absorption peaks during bunch formation',
+          diseaseMonitoring: 'Check emerging bunch for cigar end rot',
+          pestMonitoring: 'Spray bio-pesticide for thrips causing rust on fingers',
+          weatherConsiderations: 'High temperature (>36°C) causes sunscald on upper bunch hands',
+        },
+        {
+          stage: 'Fruit / Grain Development',
+          offsetDays: 240,
+          activityName: 'Propping Bamboo Support & Bunch Sleeving',
+          priority: 'HIGH',
+          description: 'Prop heavy bearing pseudostem with double bamboo poles; sleeve bunch with blue perforated polythene cover.',
+          waterRequirement: 'Maintain 20 L/plant/day drip irrigation',
+          fertilizerTask: 'Foliar spray 1% Potassium Nitrate on bunch fingers',
+          soilConsiderations: 'Prevent pseudostem uprooting',
+          diseaseMonitoring: 'Bunch sleeving prevents bird damage & fruit spot fungi',
+          pestMonitoring: 'Polythene sleeve protects fingers against fruit flies',
+          weatherConsiderations: 'Sturdy bamboo propping prevents wind lodging during monsoon gusts',
+        },
+        {
+          stage: 'Maturity',
+          offsetDays: 300,
+          activityName: 'Bunch Maturity Inspection & Finger Rounding Check',
+          priority: 'HIGH',
+          description: 'Inspect bunch fingers; harvest when angular ridges round off to 75-80% full maturity.',
+          waterRequirement: 'Reduce drip irrigation to 10 L/plant/day',
+          fertilizerTask: 'N/A',
+          soilConsiderations: 'Keep basin firm for harvesting access',
+          diseaseMonitoring: 'Inspect bunch for crown rot',
+          pestMonitoring: 'Check for fruit flies on ripe hands',
+          weatherConsiderations: 'Harvest on dry morning before sun heats fruit skin',
+        },
+        {
+          stage: 'Harvest',
+          offsetDays: 330,
+          activityName: 'Bunch Cutting & Shaded Packing Transport',
+          priority: 'HIGH',
+          description: 'Cut bunch using sharp curved knife leaving 30 cm stalk peduncle; carry gently to shaded packing shed.',
+          waterRequirement: 'Stop irrigation to mother plant',
+          fertilizerTask: 'Select 1 healthy follower sucker for ratoon crop',
+          soilConsiderations: 'Avoid dragging bunch on bare soil',
+          diseaseMonitoring: 'Disinfect cutting knives',
+          pestMonitoring: 'Inspect bunch crates before transport',
+          weatherConsiderations: 'Transport in padded shaded vehicle',
+        },
+        {
+          stage: 'Post-Harvest',
+          offsetDays: 360,
+          activityName: 'Ratoon Management & Pseudostem Chopping',
+          priority: 'MEDIUM',
+          description: 'Chop harvested mother pseudostem at 1m height; leave to release nutrients to follower sucker.',
+          waterRequirement: 'Drip irrigate follower sucker @ 15 L/day',
+          fertilizerTask: 'Apply FYM 10 kg + NPK split to ratoon sucker',
+          soilConsiderations: 'Mulch pseudostem pieces around ratoon sucker base',
+          diseaseMonitoring: 'Clear diseased leaf debris from mat base',
+          pestMonitoring: 'Treat ratoon mat against banana weevil',
+          weatherConsiderations: 'Incorporate organic pseudostem mulch before summer dry spell',
         },
       ];
     } else if (cropName.includes('tomato')) {
@@ -624,7 +796,7 @@ export class CalendarService {
           if (liveWeather.rainProbability >= 50 && (actLower.includes('fertil') || actLower.includes('irrigation') || actLower.includes('spray'))) {
             weatherImpact = `🌧️ High Rain Risk (${liveWeather.rainProbability}%). Postpone fertigation/spraying to avoid runoff loss.`;
             isSmartAdjusted = true;
-          } else if (liveWeather.humidity >= 85 && (actLower.includes('disease') || actLower.includes('blight') || actLower.includes('anthracnose'))) {
+          } else if (liveWeather.humidity >= 85 && (actLower.includes('disease') || actLower.includes('blight') || actLower.includes('anthracnose') || actLower.includes('sigatoka'))) {
             weatherImpact = `🍄 High Humidity Alert (${liveWeather.humidity}%). Spore germination risk high today. Inspect foliage.`;
             isSmartAdjusted = true;
           } else if (liveWeather.temperature >= 35 && (actLower.includes('irrigation') || actLower.includes('transplanting'))) {
