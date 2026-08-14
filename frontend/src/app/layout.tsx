@@ -5,6 +5,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { LanguageProvider } from '../context/LanguageContext';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { AuthGuard } from '../components/layout/AuthGuard';
 import { LiveFarmBackground } from '../components/ui/LiveFarmBackground';
 
 export const metadata: Metadata = {
@@ -23,14 +24,16 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>
-              {/* Live Dynamic Atmospheric Farming Background */}
-              <LiveFarmBackground />
+              <AuthGuard>
+                {/* Live Dynamic Atmospheric Farming Background */}
+                <LiveFarmBackground />
 
-              <div className="relative z-10 flex flex-col min-h-screen">
-                <Navbar />
-                <main className="flex-1 w-full">{children}</main>
-                <Footer />
-              </div>
+                <div className="relative z-10 flex flex-col min-h-screen">
+                  <Navbar />
+                  <main className="flex-1 w-full">{children}</main>
+                  <Footer />
+                </div>
+              </AuthGuard>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
