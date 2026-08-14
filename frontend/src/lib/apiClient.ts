@@ -235,54 +235,132 @@ function deriveNameFromEmail(email: string): string {
 }
 
 function getMockFallback<T>(endpoint: string, options: RequestInit = {}): any {
-  if (endpoint.startsWith('/auth/login') || endpoint.startsWith('/auth/register')) {
-    let email = 'farmer@farmpilot.ai';
-    let name: string | undefined = undefined;
+  if (endpoint.startsWith('/auth/register')) {
+    let email = '';
+    let name = '';
+    let password = '';
+    let phone = '';
+    let location = 'Kottayam, Kerala';
+    let farmSize = '3.5';
+    let farmingExperience = '5 years';
+    let mainCrop = 'Rice';
 
     if (typeof options.body === 'string') {
       try {
         const parsed = JSON.parse(options.body);
-        if (parsed.email) email = parsed.email;
-        if (parsed.name) name = parsed.name;
+        email = (parsed.email || '').trim().toLowerCase();
+        name = (parsed.name || '').trim();
+        password = parsed.password || '';
+        if (parsed.phone) phone = parsed.phone;
+        if (parsed.location) location = parsed.location;
+        if (parsed.farmSize) farmSize = parsed.farmSize;
+        if (parsed.farmingExperience) farmingExperience = parsed.farmingExperience;
+        if (parsed.mainCrop) mainCrop = parsed.mainCrop;
       } catch (e) {}
     }
 
-    let usersDb: Record<string, string> = {};
+    if (!email || !password || !name) {
+      throw new Error('Name, email, and password are required for registration.');
+    }
+
+    let registeredUsers: Record<string, any> = {};
     if (typeof window !== 'undefined') {
       try {
-        const savedDb = localStorage.getItem('farmpilot_users_db');
-        if (savedDb) usersDb = JSON.parse(savedDb);
+        const saved = localStorage.getItem('farmpilot_registered_users');
+        if (saved) registeredUsers = JSON.parse(saved);
       } catch (e) {}
     }
 
-    if (name) {
-      usersDb[email.toLowerCase()] = name;
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem('farmpilot_users_db', JSON.stringify(usersDb));
-        } catch (e) {}
-      }
+    if (registeredUsers[email]) {
+      throw new Error('An account with this email address already exists. Please sign in instead.');
     }
 
-    let displayName = name || usersDb[email.toLowerCase()];
-    if (!displayName) {
-      displayName = deriveNameFromEmail(email);
-    }
-
-    const user = {
-      ...MOCK_USER,
+    const newUser: User = {
       id: `usr_${Date.now()}`,
       email,
-      name: displayName,
+      name,
+      profile: {
+        id: `prof_${Date.now()}`,
+        phone,
+        location,
+        farmSize: parseFloat(farmSize) || 3.5,
+        farmingExperience,
+        mainCrop,
+      },
+      farms: [
+        {
+          id: `farm_${Date.now()}`,
+          name: `${name.split(' ')[0]}'s Farm Plot`,
+          location,
+          area: parseFloat(farmSize) || 3.5,
+          soilType: 'Clay Loam',
+          irrigationType: 'Drip & Basin Irrigation',
+        },
+      ],
+    };
+
+    registeredUsers[email] = {
+      ...newUser,
+      password,
     };
 
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('farmpilot_user_session', JSON.stringify(user));
+        localStorage.setItem('farmpilot_registered_users', JSON.stringify(registeredUsers));
+        localStorage.setItem('farmpilot_user_session', JSON.stringify(newUser));
       } catch (e) {}
     }
 
-    return { token: 'jwt-token-farmpilot-2026', user };
+    return { token: 'jwt-token-farmpilot-2026', user: newUser };
+  }
+
+  if (endpoint.startsWith('/auth/login')) {
+    let email = '';
+    let password = '';
+
+    if (typeof options.body === 'string') {
+      try {
+        const parsed = JSON.parse(options.body);
+        email = (parsed.email || '').trim().toLowerCase();
+        password = parsed.password || '';
+      } catch (e) {}
+    }
+
+    if (!email || !password) {
+      throw new Error('Please provide both email address and password.');
+    }
+
+    let registeredUsers: Record<string, any> = {};
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('farmpilot_registered_users');
+        if (saved) registeredUsers = JSON.parse(saved);
+      } catch (e) {}
+    }
+
+    let loggedInUser: User | null = null;
+
+    if ((email === 'farmer@farmpilot.ai' || email === 'farmer@farmpilot.com') && password === 'password123') {
+      loggedInUser = MOCK_USER;
+    } else if (registeredUsers[email]) {
+      const storedAccount = registeredUsers[email];
+      if (storedAccount.password === password) {
+        const { password: _, ...userWithoutPassword } = storedAccount;
+        loggedInUser = userWithoutPassword;
+      } else {
+        throw new Error('Invalid password. Please check your password and try again.');
+      }
+    } else {
+      throw new Error('Account not found. No account exists with this email. Please register for an account first.');
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('farmpilot_user_session', JSON.stringify(loggedInUser));
+      } catch (e) {}
+    }
+
+    return { token: 'jwt-token-farmpilot-2026', user: loggedInUser };
   }
   if (endpoint.startsWith('/auth/me')) {
     if (typeof window !== 'undefined') {
@@ -293,7 +371,7 @@ function getMockFallback<T>(endpoint: string, options: RequestInit = {}): any {
         }
       } catch (e) {}
     }
-    return MOCK_USER;
+    return null;
   }
   if (endpoint.startsWith('/weather/alerts')) {
     return MOCK_WEATHER_ALERTS;

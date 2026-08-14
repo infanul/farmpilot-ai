@@ -10,8 +10,8 @@ import { Lock, Mail, ArrowRight, AlertCircle, Sprout } from 'lucide-react';
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState('farmer@farmpilot.ai');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
