@@ -28,6 +28,10 @@ export const Navbar: React.FC = () => {
     }
   }, [user]);
 
+  if (!pathname || pathname === '/' || pathname === '/login' || pathname === '/register') {
+    return null;
+  }
+
   const safeNotifications = Array.isArray(notifications) ? notifications : [];
   const unreadCount = safeNotifications.filter((n) => n && !n.isRead).length;
   const userName = user?.name || 'Farmer';

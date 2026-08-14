@@ -10,8 +10,14 @@ export const LiveFarmBackground: React.FC<LiveFarmBackgroundProps> = ({
   weatherCondition = 'SUNNY',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [mounted, setMounted] = React.useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -174,7 +180,9 @@ export const LiveFarmBackground: React.FC<LiveFarmBackgroundProps> = ({
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [weatherCondition]);
+  }, [weatherCondition, mounted]);
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

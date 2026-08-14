@@ -1,8 +1,17 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Logo } from '../ui/Logo';
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
+
+  if (!pathname || pathname === '/' || pathname === '/login' || pathname === '/register') {
+    return null;
+  }
+
   return (
     <footer className="w-full glass-panel border-t border-slate-800 bg-slate-950 text-slate-400 py-10 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
