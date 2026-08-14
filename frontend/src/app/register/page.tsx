@@ -70,7 +70,7 @@ export default function RegisterPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Farmer Ramesh Patel"
+                placeholder="e.g. Infan Rahman"
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:border-farm-500 outline-none"
               />
             </div>
@@ -86,7 +86,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="ramesh@farm.com"
+                placeholder="e.g. infan@example.com"
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:border-farm-500 outline-none"
               />
             </div>

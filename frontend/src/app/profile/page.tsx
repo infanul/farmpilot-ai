@@ -20,7 +20,7 @@ export default function ProfilePage() {
               {user?.name ? user.name.charAt(0).toUpperCase() : 'F'}
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-white">{user?.name || 'Farmer Ramesh Patel'}</h1>
+              <h1 className="text-2xl font-extrabold text-white">{user?.name || 'Farmer'}</h1>
               <p className="text-xs text-slate-400 mt-0.5">{user?.email || 'farmer@farmpilot.ai'}</p>
             </div>
           </div>

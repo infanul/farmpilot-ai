@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Logo } from '../../components/ui/Logo';
 import { useAuth } from '../../context/AuthContext';
-import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle, Sprout } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,12 +30,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4">
-      <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-slate-800 bg-slate-900/90 shadow-2xl space-y-6">
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 overflow-hidden">
+      {/* Agricultural Backdrop Visual */}
+      <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center filter saturate-150 blur-[2px]" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-950/80 via-slate-950/90 to-slate-950" />
+
+      {/* Main Login Card */}
+      <div className="relative z-10 w-full max-w-md glass-panel p-8 rounded-3xl border border-slate-800 bg-slate-900/90 shadow-2xl space-y-6">
         <div className="text-center space-y-2">
           <Logo size="lg" className="justify-center" />
-          <h2 className="text-xl font-bold text-white mt-4">Welcome back, Farmer</h2>
-          <p className="text-xs text-slate-400">Log in to access your farm intelligence & crop calendar</p>
+          <h2 className="text-2xl font-extrabold text-white mt-4 tracking-tight">Sign In to FarmPilot AI</h2>
+          <p className="text-xs text-slate-400">Access your digital farm intelligence & crop management</p>
         </div>
 
         {error && (
@@ -55,7 +60,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="farmer@farmpilot.ai"
+                placeholder="you@farmpilot.ai"
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:border-farm-500 outline-none"
               />
             </div>
@@ -92,19 +97,22 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-          <p className="font-semibold text-farm-300">🔑 Demo Account Credentials:</p>
+        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+          <p className="font-semibold text-farm-300 flex items-center gap-1">
+            <Sprout className="w-3.5 h-3.5 text-emerald-400" /> Pre-Seeded Demo Account:
+          </p>
           <p>Email: <code className="text-slate-200">farmer@farmpilot.ai</code></p>
           <p>Password: <code className="text-slate-200">password123</code></p>
         </div>
 
-        <p className="text-center text-xs text-slate-400">
-          Don't have a FarmPilot AI account?{' '}
+        <p className="text-center text-xs text-slate-400 pt-2">
+          Don't have an account?{' '}
           <Link href="/register" className="text-farm-400 hover:underline font-semibold">
-            Register here
+            Create an account
           </Link>
         </p>
       </div>
     </div>
   );
 }
+

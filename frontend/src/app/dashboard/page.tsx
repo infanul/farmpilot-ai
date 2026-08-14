@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { WeatherWidget } from '../../components/dashboard/WeatherWidget';
 import { FarmSummaryCards } from '../../components/dashboard/FarmSummaryCards';
@@ -20,8 +21,9 @@ import { ArrowRight, Leaf, TrendingUp, TestTube, Sparkles, Sprout, Scan } from '
 import { formatCurrency } from '../../lib/utils';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { t } = useLanguage();
+  const router = useRouter();
 
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [alerts, setAlerts] = useState<WeatherAlert[]>([]);
@@ -31,7 +33,13 @@ export default function DashboardPage() {
   const [recentScans, setRecentScans] = useState<DiseaseScanResult[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const farmerName = user?.name ? user.name.split(' ')[0] : 'Farmer';
+  const farmerName = user?.name || 'Farmer';
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     const loadDashboardData = async () => {

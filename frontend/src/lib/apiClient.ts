@@ -14,8 +14,8 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const MOCK_USER: User = {
-  id: 'usr_demo_patel_123',
-  name: 'Ramesh Patel',
+  id: 'usr_demo_123',
+  name: 'Demo Farmer',
   email: 'farmer@farmpilot.ai',
   profile: {
     id: 'prof_demo_123',
@@ -225,16 +225,49 @@ const MOCK_SCANS: DiseaseScanResult[] = [
 function getMockFallback<T>(endpoint: string, options: RequestInit = {}): any {
   if (endpoint.startsWith('/auth/login') || endpoint.startsWith('/auth/register')) {
     let email = 'farmer@farmpilot.ai';
+    let name: string | undefined = undefined;
     if (typeof options.body === 'string') {
       try {
         const parsed = JSON.parse(options.body);
         if (parsed.email) email = parsed.email;
+        if (parsed.name) name = parsed.name;
       } catch (e) {}
     }
-    const user = { ...MOCK_USER, email };
+    
+    let displayName = name;
+    if (!displayName && typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('farmpilot_demo_user');
+        if (saved) {
+          const parsedSaved = JSON.parse(saved);
+          if (parsedSaved.email === email && parsedSaved.name) {
+            displayName = parsedSaved.name;
+          }
+        }
+      } catch (e) {}
+    }
+
+    const user = {
+      ...MOCK_USER,
+      email,
+      name: displayName || MOCK_USER.name,
+    };
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('farmpilot_demo_user', JSON.stringify(user));
+    }
+
     return { token: 'demo-jwt-token-farmpilot-2026', user };
   }
   if (endpoint.startsWith('/auth/me')) {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('farmpilot_demo_user');
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (e) {}
+    }
     return MOCK_USER;
   }
   if (endpoint.startsWith('/weather/alerts')) {

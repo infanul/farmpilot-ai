@@ -28,7 +28,7 @@ async function main() {
     data: {
       email: 'farmer@farmpilot.ai',
       password: hashedPassword,
-      name: 'Ramesh Patel',
+      name: 'Demo Farmer',
       profile: {
         create: {
           phone: '+91 98765 43210',
