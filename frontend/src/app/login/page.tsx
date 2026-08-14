@@ -99,7 +99,7 @@ export default function LoginPage() {
 
         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
           <p className="font-semibold text-farm-300 flex items-center gap-1">
-            <Sprout className="w-3.5 h-3.5 text-emerald-400" /> Pre-Seeded Demo Account:
+            <Sprout className="w-3.5 h-3.5 text-emerald-400" /> Pre-Seeded Account Credentials:
           </p>
           <p>Email: <code className="text-slate-200">farmer@farmpilot.ai</code></p>
           <p>Password: <code className="text-slate-200">password123</code></p>

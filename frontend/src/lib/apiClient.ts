@@ -14,11 +14,11 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const MOCK_USER: User = {
-  id: 'usr_demo_123',
-  name: 'Demo Farmer',
+  id: 'usr_farmer_123',
+  name: 'Farmer',
   email: 'farmer@farmpilot.ai',
   profile: {
-    id: 'prof_demo_123',
+    id: 'prof_farmer_123',
     phone: '+91 98765 43210',
     location: 'Kottayam, Kerala',
     farmSize: 4.5,
@@ -27,7 +27,7 @@ const MOCK_USER: User = {
   },
   farms: [
     {
-      id: 'farm_demo_1',
+      id: 'farm_123',
       name: 'Green Canopy Farm Sector A',
       location: 'Kottayam Sector 2',
       area: 4.5,
@@ -222,10 +222,23 @@ const MOCK_SCANS: DiseaseScanResult[] = [
   },
 ];
 
+function deriveNameFromEmail(email: string): string {
+  if (!email || !email.includes('@')) return 'Farmer';
+  const prefix = email.split('@')[0];
+  if (!prefix || prefix.toLowerCase() === 'farmer') return 'Farmer';
+
+  return prefix
+    .split(/[\._\-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
 function getMockFallback<T>(endpoint: string, options: RequestInit = {}): any {
   if (endpoint.startsWith('/auth/login') || endpoint.startsWith('/auth/register')) {
     let email = 'farmer@farmpilot.ai';
     let name: string | undefined = undefined;
+
     if (typeof options.body === 'string') {
       try {
         const parsed = JSON.parse(options.body);
@@ -233,36 +246,48 @@ function getMockFallback<T>(endpoint: string, options: RequestInit = {}): any {
         if (parsed.name) name = parsed.name;
       } catch (e) {}
     }
-    
-    let displayName = name;
-    if (!displayName && typeof window !== 'undefined') {
+
+    let usersDb: Record<string, string> = {};
+    if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('farmpilot_demo_user');
-        if (saved) {
-          const parsedSaved = JSON.parse(saved);
-          if (parsedSaved.email === email && parsedSaved.name) {
-            displayName = parsedSaved.name;
-          }
-        }
+        const savedDb = localStorage.getItem('farmpilot_users_db');
+        if (savedDb) usersDb = JSON.parse(savedDb);
       } catch (e) {}
+    }
+
+    if (name) {
+      usersDb[email.toLowerCase()] = name;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('farmpilot_users_db', JSON.stringify(usersDb));
+        } catch (e) {}
+      }
+    }
+
+    let displayName = name || usersDb[email.toLowerCase()];
+    if (!displayName) {
+      displayName = deriveNameFromEmail(email);
     }
 
     const user = {
       ...MOCK_USER,
+      id: `usr_${Date.now()}`,
       email,
-      name: displayName || MOCK_USER.name,
+      name: displayName,
     };
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem('farmpilot_demo_user', JSON.stringify(user));
+      try {
+        localStorage.setItem('farmpilot_user_session', JSON.stringify(user));
+      } catch (e) {}
     }
 
-    return { token: 'demo-jwt-token-farmpilot-2026', user };
+    return { token: 'jwt-token-farmpilot-2026', user };
   }
   if (endpoint.startsWith('/auth/me')) {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('farmpilot_demo_user');
+        const saved = localStorage.getItem('farmpilot_user_session');
         if (saved) {
           return JSON.parse(saved);
         }
