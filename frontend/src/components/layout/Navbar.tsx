@@ -28,7 +28,10 @@ export const Navbar: React.FC = () => {
     }
   }, [user]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const unreadCount = safeNotifications.filter((n) => n && !n.isRead).length;
+  const userName = user?.name || 'Farmer';
+  const avatarInitial = userName.charAt(0).toUpperCase();
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800 bg-slate-900/90">
@@ -147,10 +150,10 @@ export const Navbar: React.FC = () => {
                       </span>
                     </div>
                     <div className="space-y-2.5 max-h-64 overflow-y-auto">
-                      {notifications.length === 0 ? (
+                      {safeNotifications.length === 0 ? (
                         <p className="text-xs text-slate-400 text-center py-3">No notifications yet.</p>
                       ) : (
-                        notifications.slice(0, 4).map((n) => (
+                        safeNotifications.slice(0, 4).map((n) => (
                           <div key={n.id} className="p-2.5 bg-slate-800/60 rounded-xl text-xs border border-slate-700/50">
                             <p className="font-semibold text-slate-200">{n.title}</p>
                             <p className="text-slate-400 mt-1 leading-relaxed">{n.message}</p>
@@ -168,9 +171,9 @@ export const Navbar: React.FC = () => {
                 className="flex items-center gap-2 p-1.5 rounded-xl text-slate-200 hover:bg-slate-800 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-farm-600 flex items-center justify-center text-white font-semibold text-xs border border-farm-400">
-                  {user.name.charAt(0).toUpperCase()}
+                  {avatarInitial}
                 </div>
-                <span className="hidden lg:inline text-xs font-medium text-slate-200">{user.name}</span>
+                <span className="hidden lg:inline text-xs font-medium text-slate-200">{userName}</span>
               </Link>
 
               <button

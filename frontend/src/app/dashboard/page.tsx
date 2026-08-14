@@ -47,19 +47,19 @@ export default function DashboardPage() {
         if (weatherRes.status === 'fulfilled') setWeather(weatherRes.value);
         if (alertsRes.status === 'fulfilled') setAlerts(alertsRes.value);
         if (marketRes.status === 'fulfilled') setMarketPrices(marketRes.value);
-        if (soilRes.status === 'fulfilled' && soilRes.value.length > 0) setSoilRecord(soilRes.value[0]);
+        if (soilRes.status === 'fulfilled' && Array.isArray(soilRes.value) && soilRes.value.length > 0) {
+          setSoilRecord(soilRes.value[0]);
+        }
 
-        if (user) {
-          try {
-            const [calEvents, scans] = await Promise.all([
-              apiClient.get<CropCalendarEvent[]>('/calendar'),
-              apiClient.get<DiseaseScanResult[]>('/disease/scans'),
-            ]);
-            setEvents(calEvents);
-            setRecentScans(scans);
-          } catch (e) {
-            console.warn('User dashboard data load note:', e);
-          }
+        try {
+          const [calEvents, scans] = await Promise.all([
+            apiClient.get<CropCalendarEvent[]>('/calendar'),
+            apiClient.get<DiseaseScanResult[]>('/disease/scans'),
+          ]);
+          setEvents(Array.isArray(calEvents) ? calEvents : []);
+          setRecentScans(Array.isArray(scans) ? scans : []);
+        } catch (e) {
+          console.warn('Dashboard events/scans load note:', e);
         }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);

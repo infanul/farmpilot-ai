@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -26,8 +26,8 @@ export const Sidebar: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [isPinned, setIsPinned] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [scrolledFar, setScrolledFar] = useState(false);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     let ticking = false;
@@ -45,16 +45,16 @@ export const Sidebar: React.FC = () => {
 
           if (!isPinned) {
             // Scroll Down -> Gracefully slide away sidebar to free up space
-            if (currentScrollY > lastScrollY && currentScrollY > 120) {
+            if (currentScrollY > lastScrollYRef.current && currentScrollY > 120) {
               setIsVisible(false);
             } 
             // Scroll Up or Near Top -> Reappear with soft transition
-            else if (currentScrollY < lastScrollY || currentScrollY < 40) {
+            else if (currentScrollY < lastScrollYRef.current || currentScrollY < 40) {
               setIsVisible(true);
             }
           }
 
-          setLastScrollY(currentScrollY);
+          lastScrollYRef.current = currentScrollY;
           ticking = false;
         });
         ticking = true;
@@ -63,7 +63,7 @@ export const Sidebar: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, isPinned]);
+  }, [isPinned]);
 
   const showSidebar = isVisible || isPinned || isHovered;
 
